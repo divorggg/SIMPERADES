@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Izinkan akses ke folder penyimpanan aplikasi -->
+    <external-files-path
+        name="external_files"
+        path="." />
+
+    <!-- Izinkan akses ke folder Download dalam storage aplikasi -->
+    <external-path
+        name="download"
+        path="Download/" />
+</paths>
