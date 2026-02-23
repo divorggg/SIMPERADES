@@ -8,16 +8,13 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import com.example.simperades.SimperadesApp
 import com.example.simperades.ui.home.keuangan.ViewModel.KeuanganViewModel
 import com.example.simperades.ui.home.keuangan.dao.Keuangan
 
@@ -29,13 +26,25 @@ fun TambahKeuanganScreen(
     navController: NavController,
     vm: KeuanganViewModel = viewModel()
 ) {
+
     var jenis by remember { mutableStateOf("PEMASUKAN") }
     var kategori by remember { mutableStateOf("") }
     var jumlah by remember { mutableStateOf("") }
     var keterangan by remember { mutableStateOf("") }
+    var jumlahKg by remember { mutableStateOf("") }
+    var hargaPerKg by remember { mutableStateOf("") }
 
     val kategoriPemasukan = listOf("Penjualan Ikan", "Investasi", "Lainnya")
     val kategoriPengeluaran = listOf("Pakan", "Bibit", "Perawatan", "Operasional", "Lainnya")
+
+    val isPenjualan = jenis == "PEMASUKAN" && kategori == "Penjualan Ikan"
+
+    val totalOtomatis by remember(jumlahKg, hargaPerKg) {
+        derivedStateOf {
+            (jumlahKg.toDoubleOrNull() ?: 0.0) *
+                    (hargaPerKg.toDoubleOrNull() ?: 0.0)
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -43,13 +52,14 @@ fun TambahKeuanganScreen(
                 title = { Text("Tambah Transaksi", color = Color.White) },
                 navigationIcon = {
                     IconButton(onClick = { navController.navigateUp() }) {
-                        Icon(Icons.Filled.ArrowBack, "Kembali", tint = Color.White)
+                        Icon(Icons.Filled.ArrowBack, contentDescription = "Kembali", tint = Color.White)
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = PrimaryBlue)
             )
         }
     ) { padding ->
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -59,26 +69,43 @@ fun TambahKeuanganScreen(
                 .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // Pilih Jenis
+
+            // ==============================
+            // JENIS TRANSAKSI
+            // ==============================
             Text("Jenis Transaksi", style = MaterialTheme.typography.titleSmall)
+
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 FilterChip(
                     selected = jenis == "PEMASUKAN",
-                    onClick = { jenis = "PEMASUKAN" },
+                    onClick = {
+                        jenis = "PEMASUKAN"
+                        kategori = ""
+                    },
                     label = { Text("Pemasukan") }
                 )
+
                 FilterChip(
                     selected = jenis == "PENGELUARAN",
-                    onClick = { jenis = "PENGELUARAN" },
+                    onClick = {
+                        jenis = "PENGELUARAN"
+                        kategori = ""
+                    },
                     label = { Text("Pengeluaran") }
                 )
             }
 
-            // Pilih Kategori
+            // ==============================
+            // KATEGORI
+            // ==============================
             Text("Kategori", style = MaterialTheme.typography.titleSmall)
-            val daftarKategori = if (jenis == "PEMASUKAN") kategoriPemasukan else kategoriPengeluaran
+
+            val daftarKategori =
+                if (jenis == "PEMASUKAN") kategoriPemasukan
+                else kategoriPengeluaran
 
             var expanded by remember { mutableStateOf(false) }
+
             ExposedDropdownMenuBox(
                 expanded = expanded,
                 onExpandedChange = { expanded = !expanded }
@@ -88,11 +115,14 @@ fun TambahKeuanganScreen(
                     onValueChange = {},
                     readOnly = true,
                     label = { Text("Pilih Kategori") },
-                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+                    trailingIcon = {
+                        ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
+                    },
                     modifier = Modifier
                         .fillMaxWidth()
                         .menuAnchor()
                 )
+
                 ExposedDropdownMenu(
                     expanded = expanded,
                     onDismissRequest = { expanded = false }
@@ -109,16 +139,50 @@ fun TambahKeuanganScreen(
                 }
             }
 
-            // Input Jumlah
-            OutlinedTextField(
-                value = jumlah,
-                onValueChange = { jumlah = it },
-                label = { Text("Jumlah (Rp)") },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                modifier = Modifier.fillMaxWidth()
-            )
+            // ==============================
+            // KHUSUS PENJUALAN IKAN
+            // ==============================
+            if (isPenjualan) {
 
-            // Input Keterangan
+                OutlinedTextField(
+                    value = jumlahKg,
+                    onValueChange = { jumlahKg = it },
+                    label = { Text("Jumlah Ikan (Kg)") },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                OutlinedTextField(
+                    value = hargaPerKg,
+                    onValueChange = { hargaPerKg = it },
+                    label = { Text("Harga per Kg (Rp)") },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    modifier = Modifier.fillMaxWidth()
+                )
+
+                Text(
+                    text = "Total Otomatis: Rp ${"%,.0f".format(totalOtomatis)}",
+                    style = MaterialTheme.typography.titleMedium,
+                    color = Color(0xFF2E7D32)
+                )
+            }
+
+            // ==============================
+            // JUMLAH MANUAL (NON PENJUALAN)
+            // ==============================
+            if (!isPenjualan) {
+                OutlinedTextField(
+                    value = jumlah,
+                    onValueChange = { jumlah = it },
+                    label = { Text("Jumlah (Rp)") },
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+
+            // ==============================
+            // KETERANGAN
+            // ==============================
             OutlinedTextField(
                 value = keterangan,
                 onValueChange = { keterangan = it },
@@ -127,16 +191,35 @@ fun TambahKeuanganScreen(
                 minLines = 3
             )
 
-            // Tombol Simpan
+            // ==============================
+            // BUTTON SIMPAN
+            // ==============================
             Button(
                 onClick = {
-                    if (kategori.isNotBlank() && jumlah.isNotBlank()) {
+
+                    val total = if (isPenjualan) {
+                        totalOtomatis
+                    } else {
+                        jumlah.toDoubleOrNull() ?: 0.0
+                    }
+
+                    val isValid = if (isPenjualan) {
+                        jumlahKg.isNotBlank() && hargaPerKg.isNotBlank()
+                    } else {
+                        jumlah.isNotBlank()
+                    }
+
+                    if (kategori.isNotBlank() && isValid) {
+
                         val keuangan = Keuangan(
                             jenis = jenis,
                             kategori = kategori,
-                            jumlah = jumlah.toDoubleOrNull() ?: 0.0,
+                            jumlah = total,
+                            jumlahKg = if (isPenjualan) jumlahKg.toDoubleOrNull() else null,
+                            hargaPerKg = if (isPenjualan) hargaPerKg.toDoubleOrNull() else null,
                             keterangan = keterangan
                         )
+
                         vm.insertKeuangan(keuangan)
                         navController.navigateUp()
                     }

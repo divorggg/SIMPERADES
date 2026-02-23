@@ -18,6 +18,9 @@ interface KeuanganDao {
     @Query("SELECT SUM(jumlah) FROM keuangan WHERE jenis = 'PENGELUARAN'")
     fun getTotalPengeluaran(): Flow<Double?>
 
+    @Query("SELECT * FROM keuangan WHERE id = :id")
+    fun getKeuanganById(id: Int): Flow<Keuangan?>
+
     @Insert
     suspend fun insert(keuangan: Keuangan)
 

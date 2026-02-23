@@ -31,6 +31,7 @@ import com.example.simperades.ui.home.HomeScreen
 import com.example.simperades.ui.home.keramba.AddKerambaScreen
 import com.example.simperades.ui.home.keramba.AllKerambaScreen
 import com.example.simperades.ui.home.keramba.DetailKerambaScreen
+import com.example.simperades.ui.home.keuangan.screen.DetailKeuanganScreen
 import com.example.simperades.ui.home.keuangan.screen.KeuanganScreen
 import com.example.simperades.ui.home.keuangan.screen.TambahKeuanganScreen
 import com.example.simperades.ui.home.laporan.LaporanScreen
@@ -225,6 +226,19 @@ fun MainScaffold() {
                 ) {
                     TambahKeuanganScreen(navController)
                 }
+            }
+
+            composable(
+                "detail_keuangan/{id}",
+                arguments = listOf(navArgument("id") { type = NavType.IntType })
+            ) { backStackEntry ->
+
+                val id = backStackEntry.arguments?.getInt("id") ?: 0
+
+                DetailKeuanganScreen(
+                    navController = navController,
+                    id = id
+                )
             }
 
             // LAPORAN SCREEN

@@ -8,10 +8,15 @@ import java.util.Date
 data class Keuangan(
     @PrimaryKey(autoGenerate = true)
     val id: Int = 0,
-    val tanggal: Long = System.currentTimeMillis(), // Timestamp
-    val jenis: String, // "PEMASUKAN" atau "PENGELUARAN"
-    val kategori: String, // "Pakan", "Bibit", "Penjualan", dll
+    val tanggal: Long = System.currentTimeMillis(),
+    val jenis: String,
+    val kategori: String,
     val jumlah: Double,
+
+    // TAMBAHAN BARU
+    val jumlahKg: Double? = null,
+    val hargaPerKg: Double? = null,
+
     val keterangan: String = "",
-    val kerambaId: Int? = null // Opsional, terkait keramba tertentu
+    val kerambaId: Int? = null
 )

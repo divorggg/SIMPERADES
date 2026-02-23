@@ -39,6 +39,9 @@ class KeuanganViewModel(application: Application) : AndroidViewModel(application
         }
     }
 
+    fun getKeuanganById(id: Int) =
+        dao.getKeuanganById(id)
+
     fun deleteKeuangan(keuangan: Keuangan) {
         viewModelScope.launch {
             dao.delete(keuangan)
